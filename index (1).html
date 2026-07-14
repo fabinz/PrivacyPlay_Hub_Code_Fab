@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PrivacyPlay — A field guide to differential privacy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#E9ECF2;
+    --paper-2:#E1E5EE;
+    --card:#FFFFFF;
+    --ink:#14172A;
+    --ink-soft:#4B5169;
+    --ink-faint:#878EA4;
+    --line:#D3D8E4;
+    --line-soft:#E4E8F0;
+    --beginner:#2E3CE0;
+    --beginner-soft:rgba(46,60,224,.08);
+    --intermediate:#0E8F86;
+    --intermediate-soft:rgba(14,143,134,.09);
+    --shadow:0 1px 2px rgba(20,23,42,.04),0 8px 24px rgba(20,23,42,.06);
+    --shadow-lift:0 2px 6px rgba(20,23,42,.06),0 18px 44px rgba(20,23,42,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(var(--line) .8px,transparent .8px);
+    background-size:26px 26px;
+    background-position:-13px -13px;
+    min-height:100vh;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px}
+  .mono{font-family:"Space Mono",monospace}
+  a{color:inherit;text-decoration:none}
+
+  /* ---------- top bar ---------- */
+  .topbar{padding:26px 0 0}
+  .back{
+    display:inline-flex;align-items:center;gap:9px;
+    font-family:"Space Mono",monospace;font-size:12.5px;letter-spacing:.04em;
+    color:var(--ink-soft);text-transform:uppercase;
+    padding:8px 12px;border:1px solid var(--line);border-radius:100px;
+    background:var(--card);transition:.18s ease;
+  }
+  .back:hover{color:var(--ink);border-color:var(--ink);transform:translateX(-2px)}
+  .back svg{width:13px;height:13px}
+
+  /* ---------- home hero ---------- */
+  .hero{text-align:center;padding:74px 0 30px}
+  .hero h1{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(52px,10vw,104px);letter-spacing:-.035em;line-height:.95;
+  }
+  .hero h1 span{color:var(--beginner)}
+  .noise{margin:22px auto 0;max-width:340px;height:26px;display:block}
+  .tagline{
+    margin:20px auto 0;max-width:480px;color:var(--ink-soft);
+    font-size:16.5px;
+  }
+  .eyebrow{
+    font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--ink-faint);margin-bottom:14px;
+  }
+
+  /* ---------- level cards (home) ---------- */
+  .levels{
+    display:grid;grid-template-columns:1fr 1fr;gap:20px;
+    padding:26px 0 90px;
+  }
+  .level{
+    position:relative;display:flex;flex-direction:column;
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:30px 28px 26px;box-shadow:var(--shadow);overflow:hidden;
+    transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+    min-height:230px;
+  }
+  .level:hover{transform:translateY(-4px);box-shadow:var(--shadow-lift)}
+  .level .rail{position:absolute;left:0;top:0;bottom:0;width:5px}
+  .level.b:hover{border-color:var(--beginner)}
+  .level.b .rail{background:var(--beginner)}
+  .level.i:hover{border-color:var(--intermediate)}
+  .level.i .rail{background:var(--intermediate)}
+  .level .idx{font-family:"Space Mono",monospace;font-size:12.5px;letter-spacing:.06em}
+  .level.b .idx{color:var(--beginner)}
+  .level.i .idx{color:var(--intermediate)}
+  .level h2{
+    font-family:"Space Grotesk",sans-serif;font-weight:500;
+    font-size:31px;letter-spacing:-.02em;margin:12px 0 8px;
+  }
+  .level p{color:var(--ink-soft);font-size:14.5px;flex:1}
+  .level .foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:22px;padding-top:16px;border-top:1px solid var(--line-soft);
+  }
+  .level .count{font-family:"Space Mono",monospace;font-size:12.5px;color:var(--ink-faint)}
+  .level .go{
+    display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px;
+    transition:gap .18s ease;
+  }
+  .level.b .go{color:var(--beginner)}
+  .level.i .go{color:var(--intermediate)}
+  .level:hover .go{gap:11px}
+
+  /* ---------- level page ---------- */
+  .page-head{padding:40px 0 30px}
+  .level-tag{
+    display:inline-block;font-family:"Space Mono",monospace;font-size:12.5px;
+    letter-spacing:.16em;text-transform:uppercase;padding:6px 13px;border-radius:100px;
+  }
+  .level-tag.b{color:var(--beginner);background:var(--beginner-soft)}
+  .level-tag.i{color:var(--intermediate);background:var(--intermediate-soft)}
+  .page-head h1{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(34px,6vw,52px);letter-spacing:-.03em;margin:18px 0 10px;line-height:1.02;
+  }
+  .page-head .sub{color:var(--ink-soft);font-size:16px;max-width:560px}
+
+  .group{margin-bottom:38px}
+  .group-label{
+    display:flex;align-items:center;gap:14px;margin:0 2px 14px;
+    font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-faint);
+  }
+  .group-label::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .screens{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .screen{
+    display:flex;align-items:center;gap:18px;padding:18px 22px;
+    border-bottom:1px solid var(--line-soft);
+    transition:background .16s ease,padding .18s ease;
+  }
+  .screen:last-child{border-bottom:none}
+  .screen:hover{background:var(--paper-2);padding-left:26px}
+  .screen .n{
+    font-family:"Space Mono",monospace;font-size:13px;font-weight:700;
+    width:34px;flex-shrink:0;
+  }
+  .b .screen .n{color:var(--beginner)}
+  .i .screen .n{color:var(--intermediate)}
+  .screen .body{flex:1;min-width:0}
+  .screen .body .t{
+    font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:17.5px;
+    letter-spacing:-.01em;
+  }
+  .screen .body .d{color:var(--ink-soft);font-size:13.5px;margin-top:2px}
+  .screen .arrow{
+    width:34px;height:34px;flex-shrink:0;border-radius:9px;
+    display:grid;place-items:center;border:1px solid var(--line);
+    color:var(--ink-faint);transition:.18s ease;
+  }
+  .screen:hover .arrow{color:#fff;transform:translate(2px,-2px)}
+  .b .screen:hover .arrow{background:var(--beginner);border-color:var(--beginner)}
+  .i .screen:hover .arrow{background:var(--intermediate);border-color:var(--intermediate)}
+  .screen .arrow svg{width:15px;height:15px}
+
+  footer{
+    padding:30px 0 60px;text-align:center;
+    font-family:"Space Mono",monospace;font-size:12px;color:var(--ink-faint);
+    letter-spacing:.04em;
+  }
+
+  /* ---------- reveal ---------- */
+  .reveal{opacity:0;transform:translateY(14px)}
+  @media (prefers-reduced-motion:no-preference){
+    .reveal{transition:opacity .5s ease,transform .5s ease}
+    .reveal.in{opacity:1;transform:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none}
+    html{scroll-behavior:auto}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:640px){
+    .levels{grid-template-columns:1fr;gap:16px;padding-bottom:60px}
+    .level{min-height:auto}
+    .hero{padding:52px 0 22px}
+    .screen{gap:13px;padding:16px 16px}
+    .screen:hover{padding-left:18px}
+    .screen .n{width:26px;font-size:12px}
+    .screen .body .t{font-size:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ============================================================
+   EDIT HERE: your two sites and their screens.
+   - `anchor`: leave "" for now. Once you add anchor IDs inside
+     each Lovable project (see instructions), put the id here and
+     links will jump straight to that screen.
+   ============================================================ */
+const DATA = {
+  beginner: {
+    url: "https://privacy-play.lovable.app/",
+    title: "Differential Privacy (DP)",
+    screens: [
+      { n:"01", title:"Grace's Problem",   desc:"The motivating scenario — why one person's data can be exposed.", anchor:"" },
+      { n:"02", title:"The Solution",       desc:"How adding a little noise protects any single individual.",       anchor:"" },
+      { n:"03", title:"Real World Example", desc:"Where differential privacy shows up in practice.",                anchor:"" },
+    ],
+  },
+  intermediate: {
+    url: "https://learn-privacy-play-five.vercel.app/",
+    title: "A Field Guide to Differential Privacy",
+    acts: [
+      { name:"Act 1 · Motivation", screens:[
+        { n:"01", title:"The Hospital",          desc:"One town, one database — a short story about a number.",        anchor:"" },
+        { n:"02", title:"Inside the Hospital",   desc:"The private records, and the researcher who wants to learn.",   anchor:"" },
+        { n:"03", title:"Why This Data Matters", desc:"Useful, and dangerous — how leaked records get abused.",        anchor:"" },
+        { n:"04", title:"The Core Question",     desc:"What we're actually trying to solve.",                          anchor:"" },
+        { n:"05", title:"Meet Tommy",            desc:"Not everyone asks in good faith.",                              anchor:"" },
+        { n:"06", title:"The Attack",            desc:"Watch what two harmless questions can do.",                     anchor:"" },
+        { n:"07", title:"What Just Happened",    desc:"The differencing attack, explained.",                           anchor:"" },
+      ]},
+      { name:"Act 2 · Tutorial", screens:[
+        { n:"08", title:"The Fix",             desc:"Blur the answer, not the data.",                     anchor:"" },
+        { n:"09", title:"The Noise Has a Shape", desc:"Meet the Laplace curve.",                          anchor:"" },
+        { n:"10", title:"The Noise Dial",      desc:"Turning the width up and down.",                     anchor:"" },
+        { n:"11", title:"Narrow and Wide",     desc:"Two settings, two worlds.",                          anchor:"" },
+        { n:"12", title:"Meet Epsilon (ε)",    desc:"Your one dial: privacy versus accuracy.",            anchor:"" },
+        { n:"13", title:"Composition",         desc:"Every ask leaks a little — ε is a total budget.",    anchor:"" },
+        { n:"14", title:"What You Know Now",   desc:"The whole toolkit in one place.",                    anchor:"" },
+      ]},
+      { name:"Act 3 · Play", screens:[
+        { n:"15", title:"Your Turn",   desc:"Take the instrument for a spin.",                anchor:"" },
+        { n:"16", title:"Task One",    desc:"Women or men — parallel composition.",           anchor:"" },
+        { n:"17", title:"Task Two",    desc:"Spend a budget across many asks.",               anchor:"" },
+        { n:"18", title:"Task Three",  desc:"Now stop the snoop.",                            anchor:"" },
+      ]},
+      { name:"Act 4 · Test", screens:[
+        { n:"19", title:"What You Learned", desc:"Six questions — show your work.", anchor:"" },
+      ]},
+    ],
+  },
+};
+
+/* ---------- icons ---------- */
+const arrowOut = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>';
+const chevL   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+const goArrow = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+/* noise scatter — the DP signature motif */
+function noiseSVG(){
+  const dots=[[18,16,1.4,.5],[44,10,2,.75],[52,17,1.2,.4],[78,13,2.6,.9],[96,18,1.3,.45],
+    [120,11,1.8,.6],[132,16,1.1,.35],[150,9,3,1],[162,17,1.6,.55],[176,13,1.2,.4],
+    [204,15,2.2,.7],[228,10,1.4,.5],[250,16,1.1,.35],[274,12,3.2,1],[300,17,1.5,.5],
+    [322,14,1.2,.4]];
+  let c='';
+  dots.forEach(([x,y,r,o])=>{c+=`<circle cx="${x}" cy="${y}" r="${r}" fill="var(--beginner)" opacity="${o}"/>`;});
+  return `<svg class="noise" viewBox="0 0 340 26" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${c}</svg>`;
+}
+
+function href(base, anchor){ return anchor ? base.replace(/\/?$/,'/') + '#' + anchor : base; }
+
+/* ---------- views ---------- */
+function viewHome(){
+  return `
+  <section class="hero">
+    <div class="eyebrow">An interactive learning platform</div>
+    <h1>Privacy<span>Play</span></h1>
+    ${noiseSVG()}
+    <p class="tagline">A field guide to differential privacy — where data whispers,
+    noise defends, and every count tells a story. Pick a track to begin.</p>
+  </section>
+
+  <section class="levels">
+    <a class="level b reveal" href="#/beginner">
+      <span class="rail"></span>
+      <span class="idx">TRACK 01</span>
+      <h2>Beginner Level</h2>
+      <p>Start with the core idea in three short screens — the problem, the fix, and where it shows up in the real world.</p>
+      <span class="foot">
+        <span class="count">${DATA.beginner.screens.length} screens</span>
+        <span class="go">Enter ${goArrow}</span>
+      </span>
+    </a>
+
+    <a class="level i reveal" href="#/intermediate">
+      <span class="rail"></span>
+      <span class="idx">TRACK 02</span>
+      <h2>Intermediate Level</h2>
+      <p>The full field guide, in four acts: watch an attack succeed, then watch noise defeat it, then take the instrument for a spin.</p>
+      <span class="foot">
+        <span class="count">${DATA.intermediate.acts.reduce((s,a)=>s+a.screens.length,0)} screens</span>
+        <span class="go">Enter ${goArrow}</span>
+      </span>
+    </a>
+  </section>
+
+  <footer>PRIVACYPLAY · A SPACE TO LEARN DIFFERENTIAL PRIVACY</footer>`;
+}
+
+function screenRow(base, s){
+  return `
+  <a class="screen reveal" href="${href(base,s.anchor)}" target="_blank" rel="noopener">
+    <span class="n">${s.n}</span>
+    <span class="body">
+      <span class="t">${s.title}</span>
+      <span class="d">${s.desc}</span>
+    </span>
+    <span class="arrow">${arrowOut}</span>
+  </a>`;
+}
+
+function backBar(){
+  return `<div class="topbar"><a class="back" href="#/">${chevL} PrivacyPlay</a></div>`;
+}
+
+function viewBeginner(){
+  const d=DATA.beginner;
+  return backBar()+`
+  <section class="page-head">
+    <span class="level-tag b">Beginner Level</span>
+    <h1>${d.title}</h1>
+    <p class="sub">Each screen below opens the matching moment in the beginner course.</p>
+  </section>
+  <div class="group b">
+    <div class="screens">${d.screens.map(s=>screenRow(d.url,s)).join('')}</div>
+  </div>
+  <footer>OPENS ${d.url.replace(/^https?:\/\//,'').replace(/\/$/,'').toUpperCase()}</footer>`;
+}
+
+function viewIntermediate(){
+  const d=DATA.intermediate;
+  const groups=d.acts.map(a=>`
+    <div class="group i">
+      <div class="group-label">${a.name}</div>
+      <div class="screens">${a.screens.map(s=>screenRow(d.url,s)).join('')}</div>
+    </div>`).join('');
+  return backBar()+`
+  <section class="page-head">
+    <span class="level-tag i">Intermediate Level</span>
+    <h1>${d.title}</h1>
+    <p class="sub">Twenty screens across four acts. Each one opens the matching section of the field guide.</p>
+  </section>
+  ${groups}
+  <footer>OPENS ${d.url.replace(/^https?:\/\//,'').replace(/\/$/,'').toUpperCase()}</footer>`;
+}
+
+/* ---------- router ---------- */
+function render(){
+  const app=document.getElementById('app');
+  const h=location.hash.replace(/^#/,'');
+  if(h==='/beginner')      app.innerHTML=viewBeginner();
+  else if(h==='/intermediate') app.innerHTML=viewIntermediate();
+  else                     app.innerHTML=viewHome();
+  window.scrollTo(0,0);
+  observeReveals();
+}
+
+function observeReveals(){
+  const els=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('in'));return;}
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach((en,i)=>{
+      if(en.isIntersecting){
+        setTimeout(()=>en.target.classList.add('in'), i*45);
+        io.unobserve(en.target);
+      }
+    });
+  },{threshold:.12});
+  els.forEach(e=>io.observe(e));
+}
+
+window.addEventListener('hashchange',render);
+render();
+</script>
+</body>
+</html>
