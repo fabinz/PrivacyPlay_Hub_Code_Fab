@@ -207,11 +207,49 @@
 const DATA = {
   beginner: {
     url: "https://privacy-play.lovable.app/",
-    title: "Differential Privacy (DP)",
-    screens: [
-      { n:"01", title:"Grace's Problem",   desc:"The motivating scenario — why one person's data can be exposed.", anchor:"" },
-      { n:"02", title:"The Solution",       desc:"How adding a little noise protects any single individual.",       anchor:"" },
-      { n:"03", title:"Real World Example", desc:"Where differential privacy shows up in practice.",                anchor:"" },
+    title: "Interactive Privacy Learning",
+    topics: [
+      { name:"Differential Privacy (DP)", screens:[
+        { n:"01", title:"Grace's Problem",     desc:"", anchor:"" },
+        { n:"02", title:"The Solution",        desc:"", anchor:"" },
+        { n:"03", title:"Real World Examples", desc:"", anchor:"" },
+        { n:"04", title:"Name the Gerbil",     desc:"", anchor:"" },
+        { n:"05", title:"Vote Results",        desc:"", anchor:"" },
+        { n:"06", title:"James Knows!",        desc:"", anchor:"" },
+        { n:"07", title:"Honesty Meter",       desc:"", anchor:"" },
+        { n:"08", title:"DP Saves the Day",    desc:"", anchor:"" },
+        { n:"09", title:"The Wild Part",       desc:"", anchor:"" },
+        { n:"10", title:"Randomized Response", desc:"", anchor:"" },
+        { n:"11", title:"Branching Tree",      desc:"", anchor:"" },
+        { n:"12", title:"Full DP Journey",     desc:"", anchor:"" },
+        { n:"13", title:"Meet Epsilon",        desc:"", anchor:"" },
+        { n:"14", title:"Tune Epsilon",        desc:"", anchor:"" },
+        { n:"15", title:"RAPPOR",              desc:"", anchor:"" },
+        { n:"16", title:"DP Complete",         desc:"", anchor:"" },
+      ]},
+      { name:"K-Anonymity", screens:[
+        { n:"17", title:"Secret Gaming Life",   desc:"", anchor:"" },
+        { n:"18", title:"Tommy Goes Digging",   desc:"", anchor:"" },
+        { n:"19", title:"Tommy Asks Around",    desc:"", anchor:"" },
+        { n:"20", title:"The Linkage Attack",   desc:"", anchor:"" },
+        { n:"21", title:"How Tommy Found Eli",  desc:"", anchor:"" },
+        { n:"22", title:"Why Could Tommy?",     desc:"", anchor:"" },
+        { n:"23", title:"Quasi-Identifiers + K",desc:"", anchor:"" },
+        { n:"24", title:"Hide in a Group",      desc:"", anchor:"" },
+        { n:"25", title:"K Playground",         desc:"", anchor:"" },
+        { n:"26", title:"Shapes: Meet Them",    desc:"", anchor:"" },
+        { n:"27", title:"Shapes: Colour",       desc:"", anchor:"" },
+        { n:"28", title:"Shapes: Sides",        desc:"", anchor:"" },
+        { n:"29", title:"Shapes: Back to K",    desc:"", anchor:"" },
+        { n:"30", title:"Real World Uses",      desc:"", anchor:"" },
+        { n:"31", title:"K-Anonymity Complete", desc:"", anchor:"" },
+      ]},
+      { name:"L-Diversity", screens:[
+        { n:"32", title:"K = 5 Is Not Enough", desc:"", anchor:"" },
+        { n:"33", title:"L in the Library",    desc:"", anchor:"" },
+        { n:"34", title:"Build Your Group",    desc:"", anchor:"" },
+        { n:"35", title:"You Did It!",         desc:"", anchor:"" },
+      ]},
     ],
   },
   intermediate: {
@@ -274,7 +312,8 @@ function viewHome(){
     <div class="eyebrow">An interactive learning platform</div>
     <h1>Privacy<span>Play</span></h1>
     ${noiseSVG()}
-    <p class="tagline">An interactive learning platform on how data privacy really works. Pick a track to begin.</p>
+    <p class="tagline">A field guide to differential privacy — where data whispers,
+    noise defends, and every count tells a story. Pick a track to begin.</p>
   </section>
 
   <section class="levels">
@@ -282,9 +321,9 @@ function viewHome(){
       <span class="rail"></span>
       <span class="idx">TRACK 01</span>
       <h2>Beginner Level</h2>
-      <p>Start with the core idea in three short screens — the problem, the fix, and where it shows up in the real world.</p>
+      <p>Build the foundations across three topics — differential privacy, k-anonymity, and l-diversity — one short screen at a time.</p>
       <span class="foot">
-        <span class="count">${DATA.beginner.screens.length} screens</span>
+        <span class="count">${DATA.beginner.topics.reduce((s,t)=>s+t.screens.length,0)} screens · 3 topics</span>
         <span class="go">Enter ${goArrow}</span>
       </span>
     </a>
@@ -301,7 +340,7 @@ function viewHome(){
     </a>
   </section>
 
-  <footer>PRIVACYPLAY · A SPACE TO LEARN ABOUT DATA PRIVACY</footer>`;
+  <footer>PRIVACYPLAY · A SPACE TO LEARN DIFFERENTIAL PRIVACY</footer>`;
 }
 
 function screenRow(base, s){
@@ -310,7 +349,7 @@ function screenRow(base, s){
     <span class="n">${s.n}</span>
     <span class="body">
       <span class="t">${s.title}</span>
-      <span class="d">${s.desc}</span>
+      ${s.desc ? `<span class="d">${s.desc}</span>` : ``}
     </span>
     <span class="arrow">${arrowOut}</span>
   </a>`;
@@ -322,15 +361,18 @@ function backBar(){
 
 function viewBeginner(){
   const d=DATA.beginner;
+  const groups=d.topics.map(t=>`
+    <div class="group b">
+      <div class="group-label">${t.name}</div>
+      <div class="screens">${t.screens.map(s=>screenRow(d.url,s)).join('')}</div>
+    </div>`).join('');
   return backBar()+`
   <section class="page-head">
     <span class="level-tag b">Beginner Level</span>
     <h1>${d.title}</h1>
-    <p class="sub">Each screen below opens the matching moment in the beginner course.</p>
+    <p class="sub">Three topics, ${d.topics.reduce((s,t)=>s+t.screens.length,0)} screens. Each one opens the matching moment in the beginner course.</p>
   </section>
-  <div class="group b">
-    <div class="screens">${d.screens.map(s=>screenRow(d.url,s)).join('')}</div>
-  </div>
+  ${groups}
   <footer>OPENS ${d.url.replace(/^https?:\/\//,'').replace(/\/$/,'').toUpperCase()}</footer>`;
 }
 
