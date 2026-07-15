@@ -257,31 +257,31 @@ const DATA = {
     title: "A Field Guide to Differential Privacy",
     acts: [
       { name:"Act 1 · Motivation", screens:[
-        { n:"01", title:"The Hospital",          desc:"One town, one database — a short story about a number.",        anchor:"" },
-        { n:"02", title:"Inside the Hospital",   desc:"The private records, and the researcher who wants to learn.",   anchor:"" },
-        { n:"03", title:"Why This Data Matters", desc:"Useful, and dangerous — how leaked records get abused.",        anchor:"" },
-        { n:"04", title:"The Core Question",     desc:"What we're actually trying to solve.",                          anchor:"" },
-        { n:"05", title:"Meet Tommy",            desc:"Not everyone asks in good faith.",                              anchor:"" },
-        { n:"06", title:"The Attack",            desc:"Watch what two harmless questions can do.",                     anchor:"" },
-        { n:"07", title:"What Just Happened",    desc:"The differencing attack, explained.",                           anchor:"" },
+        { n:"01", title:"The Hospital",          desc:"One town, one database — a short story about a number.",        anchor:"the-hospital" },
+        { n:"02", title:"Inside the Hospital",   desc:"The private records, and the researcher who wants to learn.",   anchor:"inside-the-hospital" },
+        { n:"03", title:"Why This Data Matters", desc:"Useful, and dangerous — how leaked records get abused.",        anchor:"why-this-data-matters" },
+        { n:"04", title:"The Core Question",     desc:"What we're actually trying to solve.",                          anchor:"the-core-question" },
+        { n:"05", title:"Meet Tommy",            desc:"Not everyone asks in good faith.",                              anchor:"meet-tommy" },
+        { n:"06", title:"The Attack",            desc:"Watch what two harmless questions can do.",                     anchor:"the-attack" },
+        { n:"07", title:"What Just Happened",    desc:"The differencing attack, explained.",                           anchor:"what-just-happened" },
       ]},
       { name:"Act 2 · Tutorial", screens:[
-        { n:"08", title:"The Fix",             desc:"Blur the answer, not the data.",                     anchor:"" },
-        { n:"09", title:"The Noise Has a Shape", desc:"Meet the Laplace curve.",                          anchor:"" },
-        { n:"10", title:"The Noise Dial",      desc:"Turning the width up and down.",                     anchor:"" },
-        { n:"11", title:"Narrow and Wide",     desc:"Two settings, two worlds.",                          anchor:"" },
-        { n:"12", title:"Meet Epsilon (ε)",    desc:"Your one dial: privacy versus accuracy.",            anchor:"" },
-        { n:"13", title:"Composition",         desc:"Every ask leaks a little — ε is a total budget.",    anchor:"" },
-        { n:"14", title:"What You Know Now",   desc:"The whole toolkit in one place.",                    anchor:"" },
+        { n:"08", title:"The Fix",             desc:"Blur the answer, not the data.",                     anchor:"the-fix" },
+        { n:"09", title:"The Noise Has a Shape", desc:"Meet the Laplace curve.",                          anchor:"the-noise-has-a-shape" },
+        { n:"10", title:"The Noise Dial",      desc:"Turning the width up and down.",                     anchor:"the-noise-dial" },
+        { n:"11", title:"Narrow and Wide",     desc:"Two settings, two worlds.",                          anchor:"narrow-and-wide" },
+        { n:"12", title:"Meet Epsilon (ε)",    desc:"Your one dial: privacy versus accuracy.",            anchor:"meet-epsilon" },
+        { n:"13", title:"Composition",         desc:"Every ask leaks a little — ε is a total budget.",    anchor:"composition" },
+        { n:"14", title:"What You Know Now",   desc:"The whole toolkit in one place.",                    anchor:"what-you-know-now" },
       ]},
       { name:"Act 3 · Play", screens:[
-        { n:"15", title:"Your Turn",   desc:"Take the instrument for a spin.",                anchor:"" },
-        { n:"16", title:"Task One",    desc:"Women or men — parallel composition.",           anchor:"" },
-        { n:"17", title:"Task Two",    desc:"Spend a budget across many asks.",               anchor:"" },
-        { n:"18", title:"Task Three",  desc:"Now stop the snoop.",                            anchor:"" },
+        { n:"15", title:"Your Turn",   desc:"Take the instrument for a spin.",                anchor:"your-turn" },
+        { n:"16", title:"Task One",    desc:"Women or men — parallel composition.",           anchor:"task-one" },
+        { n:"17", title:"Task Two",    desc:"Spend a budget across many asks.",               anchor:"task-two" },
+        { n:"18", title:"Task Three",  desc:"Now stop the snoop.",                            anchor:"task-three" },
       ]},
       { name:"Act 4 · Test", screens:[
-        { n:"19", title:"What You Learned", desc:"Six questions — show your work.", anchor:"" },
+        { n:"19", title:"What You Learned", desc:"Six questions — show your work.", anchor:"what-you-learned" },
       ]},
     ],
   },
@@ -303,7 +303,28 @@ function noiseSVG(){
   return `<svg class="noise" viewBox="0 0 340 26" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${c}</svg>`;
 }
 
-function href(base, anchor){ return anchor ? base.replace(/\/?$/,'/') + '#' + anchor : base; }
+/* ---------- deep links ----------
+   Each screen's link is built as:  <site url>#<slug of the title>
+   e.g. "K Playground" -> https://…/#k-playground
+
+   This matches the id convention you add inside each Lovable project.
+   Set DEEP_LINKS = false to send every link to the top of the site instead.
+   To override one screen's slug, set its `anchor` field in DATA above. */
+const DEEP_LINKS = true;
+
+function slugify(t){
+  return t.toLowerCase()
+          .replace(/['’]/g,'')            // Grace's -> graces
+          .replace(/[^a-z0-9\s-]/g,' ')   // drop ! : + = ( ) etc.
+          .trim()
+          .replace(/[\s-]+/g,'-');        // spaces -> hyphens
+}
+
+function href(base, anchor, title){
+  if(!DEEP_LINKS) return base;
+  const id = anchor || slugify(title || '');
+  return id ? base.replace(/\/?$/,'/') + '#' + id : base;
+}
 
 /* ---------- views ---------- */
 function viewHome(){
@@ -345,7 +366,7 @@ function viewHome(){
 
 function screenRow(base, s){
   return `
-  <a class="screen reveal" href="${href(base,s.anchor)}" target="_blank" rel="noopener">
+  <a class="screen reveal" href="${href(base,s.anchor,s.title)}" target="_blank" rel="noopener">
     <span class="n">${s.n}</span>
     <span class="body">
       <span class="t">${s.title}</span>
